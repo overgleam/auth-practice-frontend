@@ -1,13 +1,14 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import React, { useState } from "react";
 import FormContainer from "./FormContainer";
 import FormInput from "./FormInput";
 import FormSubmitButton from "./FormSubmitButton";
 import { isValidEmail, isValidObjectForm, updateError } from "../utils/methods";
+import { StackActions } from "@react-navigation/native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 
-import client from "./api/client";
+import client from "../api/client";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().trim().min(3, "Invalid Name").required("Name is required"),
@@ -20,7 +21,7 @@ const validationSchema = Yup.object().shape({
     .required("Confirm Password is required"),
 });
 
-const SignUpForm = () => {
+const SignUpForm = ({ navigation }) => {
   const [userInfo, setUserInfo] = useState({
     name: "",
     email: "",
@@ -61,13 +62,38 @@ const SignUpForm = () => {
   // };
 
   const signUp = async (values, formikActions) => {
-    // setTimeout(() => {
-    console.log(values);
-    const res = await client.post("/createUser", { ...values });
-    console.log(res.data);
-    formikActions.resetForm();
-    formikActions.setSubmitting(false);
-    // }, 3000);
+    // // setTimeout(() => {
+    // console.log(values);
+    // const res = await client.post("/createUser", { ...values });
+    // console.log(res.data);
+    // formikActions.resetForm();
+    // formikActions.setSubmitting(false);
+    // // }, 3000);
+    try {
+      const response = await client.post("/createUser", { ...values });
+
+      if (response.data.success) {
+        const signIn = await client.post("/userSignIn", {
+          email: values.email,
+          password: values.password,
+        });
+        if (signIn.data.success) {
+          navigation.dispatch(
+            StackActions.replace("ImageUpload", {
+              token: signIn.data.token,
+            })
+          );
+        }
+      }
+      if (!response.data.success) {
+        Alert.alert(response.data.message);
+      }
+    } catch (error) {
+      console.log(error.message);
+    } finally {
+      formikActions.resetForm();
+      formikActions.setSubmitting(false);
+    }
   };
 
   return (

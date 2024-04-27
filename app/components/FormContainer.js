@@ -1,7 +1,5 @@
 import {
   StyleSheet,
-  Text,
-  View,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -11,8 +9,7 @@ import React from "react";
 const FormContainer = ({ children }) => {
   return (
     <KeyboardAvoidingView
-      enabled
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : null}
       style={styles.container}
     >
       {children}
@@ -24,9 +21,7 @@ export default FormContainer;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    flex: 1,
-    backgroundColor: "white",
+    paddingHorizontal: 20,
     width: Dimensions.get("window").width,
   },
 });

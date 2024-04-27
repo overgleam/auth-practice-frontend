@@ -24,5 +24,3 @@ const FormInput = (props) => {
 };
 
 export default FormInput;
-
-const styles = StyleSheet.create({});
