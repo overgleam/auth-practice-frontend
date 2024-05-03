@@ -11,11 +11,13 @@ import LoginForm from "./LoginForm";
 import SignUpForm from "./SignUpForm";
 import { useEffect, useRef } from "react";
 import axios from "axios";
-import ImageUpload from "./ImageUpload";
+import AppLoader from "./AppLoader";
+import { useLogin } from "../context/LoginProvider";
 
 export default function App({ navigation }) {
   const animation = useRef(new Animated.Value(0)).current;
   const scrollView = useRef();
+  const { loginPending } = useLogin();
 
   const { width } = Dimensions.get("window");
 
@@ -63,49 +65,52 @@ export default function App({ navigation }) {
   });
 
   return (
-    <View style={styles.container}>
-      <View style={{ height: 80 }}>
-        <FormHeader
-          leftHeading="Welcome "
-          rightHeading="to Bogog Mama"
-          subHeading="Joseph Alforque App"
-          leftHeaderTranslateX={leftHeaderTranslateX}
-          rightHeaderTranslateY={rightHeaderTranslateY}
-          rightHeaderOpacity={rightHeaderOpacity}
-        />
-      </View>
-      <View style={{ flexDirection: "row", padding: 20 }}>
-        <FormSelectButton
-          title="Login"
-          backgroundColor={loginColorInterpolate}
-          onPress={() => scrollView.current.scrollTo({ x: 0 })}
-        />
-        <FormSelectButton
-          title="Register"
-          backgroundColor={signUpColorInterpolate}
-          onPress={() => scrollView.current.scrollTo({ x: width })}
-        />
-      </View>
-      <ScrollView
-        ref={scrollView}
-        horizontal
-        pagingEnabled
-        scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [
-            {
-              nativeEvent: { contentOffset: { x: animation } },
-            },
-          ],
-          { useNativeDriver: false }
-        )}
-      >
-        <LoginForm navigation={navigation} />
-        <ScrollView>
-          <SignUpForm navigation={navigation} />
+    <>
+      <View style={styles.container}>
+        <View style={{ height: 80 }}>
+          <FormHeader
+            leftHeading="Welcome "
+            rightHeading="to Bogog Mama"
+            subHeading="Joseph Alforque App"
+            leftHeaderTranslateX={leftHeaderTranslateX}
+            rightHeaderTranslateY={rightHeaderTranslateY}
+            rightHeaderOpacity={rightHeaderOpacity}
+          />
+        </View>
+        <View style={{ flexDirection: "row", padding: 20 }}>
+          <FormSelectButton
+            title="Login"
+            backgroundColor={loginColorInterpolate}
+            onPress={() => scrollView.current.scrollTo({ x: 0 })}
+          />
+          <FormSelectButton
+            title="Register"
+            backgroundColor={signUpColorInterpolate}
+            onPress={() => scrollView.current.scrollTo({ x: width })}
+          />
+        </View>
+        <ScrollView
+          ref={scrollView}
+          horizontal
+          pagingEnabled
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [
+              {
+                nativeEvent: { contentOffset: { x: animation } },
+              },
+            ],
+            { useNativeDriver: false }
+          )}
+        >
+          <LoginForm navigation={navigation} />
+          <ScrollView>
+            <SignUpForm navigation={navigation} />
+          </ScrollView>
         </ScrollView>
-      </ScrollView>
-    </View>
+      </View>
+      {loginPending && <AppLoader />}
+    </>
   );
 }
 

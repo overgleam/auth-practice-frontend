@@ -1,14 +1,14 @@
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert } from "react-native";
 import React, { useState } from "react";
 import FormContainer from "./FormContainer";
 import FormInput from "./FormInput";
 import FormSubmitButton from "./FormSubmitButton";
-import { isValidEmail, isValidObjectForm, updateError } from "../utils/methods";
 import { StackActions } from "@react-navigation/native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 
 import client from "../api/client";
+import { useLogin } from "../context/LoginProvider";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().trim().min(3, "Invalid Name").required("Name is required"),
@@ -28,6 +28,8 @@ const SignUpForm = ({ navigation }) => {
     password: "",
     confirmPassword: "",
   });
+
+  const { setLoginPending } = useLogin();
 
   // const [error, setError] = useState("");
 
@@ -70,6 +72,7 @@ const SignUpForm = ({ navigation }) => {
     // formikActions.setSubmitting(false);
     // // }, 3000);
     try {
+      setLoginPending(true);
       const response = await client.post("/createUser", { ...values });
 
       if (response.data.success) {
@@ -81,6 +84,7 @@ const SignUpForm = ({ navigation }) => {
           navigation.dispatch(
             StackActions.replace("ImageUpload", {
               token: signIn.data.token,
+              user: signIn.data.user,
             })
           );
         }
@@ -94,6 +98,7 @@ const SignUpForm = ({ navigation }) => {
       formikActions.resetForm();
       formikActions.setSubmitting(false);
     }
+    setLoginPending(false);
   };
 
   return (

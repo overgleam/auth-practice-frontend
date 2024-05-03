@@ -2,13 +2,13 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import client from "../api/client";
-import { StackActions } from "@react-navigation/native";
 import { useLogin } from "../context/LoginProvider";
+import UploadProgress from "./UploadProgress";
 
 const ImageUpload = (props) => {
   const [image, setImage] = useState(null);
   const [progress, setProgress] = useState(0);
-  const { token } = props.route.params;
+  const { token, user } = props.route.params;
   const { setIsLoggedIn, setProfile } = useLogin();
 
   const openImageLibrary = async () => {
@@ -66,37 +66,50 @@ const ImageUpload = (props) => {
     }
   };
 
+  const skip = () => {
+    setProfile(user);
+    setIsLoggedIn(true);
+  };
+
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.uploadContainer}
-        onPress={openImageLibrary}
-      >
+    <>
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.uploadContainer}
+          onPress={openImageLibrary}
+        >
+          {image ? (
+            <Image
+              source={{ uri: image }}
+              style={{ height: "100%", width: "100%" }}
+            />
+          ) : (
+            <Text style={styles.uploadBtn}>Upload Profile Image</Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Text onPress={skip} style={styles.skip}>
+            Skip
+          </Text>
+        </TouchableOpacity>
         {image ? (
-          <Image
-            source={{ uri: image }}
-            style={{ height: "100%", width: "100%" }}
-          />
-        ) : (
-          <Text style={styles.uploadBtn}>Upload Profile Image</Text>
-        )}
-      </TouchableOpacity>
-      <Text onPress={uploadImage} style={styles.skip}>
-        Skip
-      </Text>
-      {image ? (
-        <Text onPress={uploadImage} style={[styles.skip, styles.upload]}>
-          Upload
-        </Text>
-      ) : null}
-      {progress ? (
-        <Text style={{ textAlign: "center", fontSize: 30, fontWeight: "bold" }}>
-          {progress}%
-        </Text>
-      ) : (
-        <Text>BOGO</Text>
-      )}
-    </View>
+          <TouchableOpacity
+            style={[styles.skip, styles.upload]}
+            onPress={uploadImage}
+          >
+            <Text>Upload</Text>
+          </TouchableOpacity>
+        ) : null}
+        {progress ? (
+          <Text
+            style={{ textAlign: "center", fontSize: 30, fontWeight: "bold" }}
+          >
+            {progress}%
+          </Text>
+        ) : null}
+      </View>
+      {progress ? <UploadProgress process={progress} /> : null}
+    </>
   );
 };
 

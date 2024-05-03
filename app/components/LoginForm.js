@@ -16,7 +16,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const LoginForm = ({ navigation }) => {
-  const { setIsLoggedIn, setProfile } = useLogin();
+  const { setIsLoggedIn, setProfile, setLoginPending } = useLogin();
   const [userInfo, setUserInfo] = useState({ email: "", password: "" });
 
   // const { email, password } = userInfo;
@@ -39,7 +39,16 @@ const LoginForm = ({ navigation }) => {
 
   const submitForm = async (values, formikActions) => {
     try {
-      const response = await client.post("/userSignIn", { ...values });
+      setLoginPending(true);
+      const responsePromise = client.post("/userSignIn", { ...values });
+
+      const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error("Request timed out"));
+        }, 10000); // Replace YOUR_TIMEOUT_DURATION with the desired timeout duration in milliseconds
+      });
+
+      const response = await Promise.race([responsePromise, timeoutPromise]);
 
       if (response.data.success === true) {
         setProfile(response.data.user);
@@ -52,6 +61,7 @@ const LoginForm = ({ navigation }) => {
     } finally {
       formikActions.setSubmitting(false);
     }
+    setLoginPending(false);
   };
 
   // const handleOnChangeText = (text, key) => {
